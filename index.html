@@ -147,7 +147,7 @@
 
     <h1>Gustoy_Batya</h1>
     
-    <!-- БАННЕР АКЦИИ (Можете менять текст) -->
+    <!-- БАННЕР АКЦИИ -->
     <div class="promo-banner" id="banner-text">
         🔥 АКЦИЯ: Скидка 10% по промокоду VAPE10!
     </div>
@@ -156,11 +156,14 @@
         <input type="text" id="search-input" placeholder="Поиск товаров...">
     </div>
 
+    <!-- КАТЕГОРИИ -->
     <div class="categories" id="categories">
         <button class="category-btn active" data-category="all">Все</button>
         <button class="category-btn" data-category="pods">Под-системы</button>
         <button class="category-btn" data-category="liquids">Жидкости</button>
         <button class="category-btn" data-category="coils">Испарители</button>
+        <button class="category-btn" data-category="snus">Снюс</button>
+        <button class="category-btn" data-category="accessories">Аксессуары</button>
     </div>
 
     <div class="product-grid" id="product-grid"></div>
@@ -203,10 +206,10 @@
         const products = [
             { 
                 id: 1,                              
-                title: "Под-система XROS 3",        
-                price: 2500,                        
-                inStock: true, // Включаем наличие                      
-                quantity: 3,   // <--- СКОЛЬКО ШТУК НА СКЛАДЕ
+                title: "SONG A06 Matcha Frappuccino",        
+                price: 400,                        
+                inStock: true,                      
+                quantity: 3,   
                 category: 'pods',                   
                 image: "https://vapezone.com.ua/wp-content/uploads/2023/02/xros-3.jpg" 
             },
@@ -215,7 +218,7 @@
                 title: "Жидкость Blueberry Ice", 
                 price: 800, 
                 inStock: true, 
-                quantity: 10, // <--- 10 штук
+                quantity: 10, 
                 category: 'liquids', 
                 image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Vape_liquid_bottle.jpg/800px-Vape_liquid_bottle.jpg" 
             },
@@ -223,7 +226,7 @@
                 id: 3, 
                 title: "Испаритель 0.6 Ohm", 
                 price: 350, 
-                inStock: false, // Нет в наличии
+                inStock: false, 
                 quantity: 0, 
                 category: 'coils', 
                 image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Coil_for_e-cigarette.jpg/640px-Coil_for_e-cigarette.jpg" 
@@ -254,6 +257,34 @@
                 quantity: 2, 
                 category: 'pods', 
                 image: "1762973807100.jpg"
+            },
+            // === НОВЫЕ ТОВАРЫ ===
+            { 
+                id: 7, 
+                title: "Снюс Odens Cold Dry", 
+                price: 450, 
+                inStock: true, 
+                quantity: 15, 
+                category: 'snus', 
+                image: "https://via.placeholder.com/150x150/333/fff?text=Snus" 
+            },
+            { 
+                id: 8, 
+                title: "Никпады Zyn", 
+                price: 600, 
+                inStock: true, 
+                quantity: 20, 
+                category: 'snus', 
+                image: "https://via.placeholder.com/150x150/333/fff?text=Zyn" 
+            },
+            { 
+                id: 9, 
+                title: "Чехол для XROS", 
+                price: 500, 
+                inStock: true, 
+                quantity: 10, 
+                category: 'accessories', 
+                image: "https://via.placeholder.com/150x150/333/fff?text=Case" 
             }
         ];
 
@@ -261,8 +292,8 @@
         // ⚠️ БЛОК НАСТРОЕК: ЗДЕСЬ ВЫ МЕНЯЕТЕ ПРОМОКОДЫ ⚠️
         // ==============================================================
         const promoCodes = { 
-            "VAPE10": 0.10,  // Промокод VAPE10 дает скидку 10% (0.10)
-            "SMOKE20": 0.20  // Промокод SMOKE20 дает скидку 20% (0.20)
+            "VAPE10": 0.10,  
+            "SMOKE20": 0.20  
         };
 
         // ==============================================================
@@ -340,19 +371,14 @@
         function changeQty(change) {
             const product = products.find(p => p.id === currentProductId);
             
-            // Если нажимаем плюс, проверяем, не превысили ли остаток
             if (change > 0) {
                 if (currentQty + change <= product.quantity) {
                     currentQty += change;
                 } else {
-                    if (tg) {
-                        tg.showAlert(`На складе осталось только ${product.quantity} шт.`);
-                    } else {
-                        alert(`На складе осталось только ${product.quantity} шт.`);
-                    }
+                    if (tg) tg.showAlert(`На складе осталось только ${product.quantity} шт.`);
+                    else alert(`На складе осталось только ${product.quantity} шт.`);
                 }
             } 
-            // Если нажимаем минус, не даем уйти в минус
             else if (change < 0) {
                 if (currentQty + change >= 1) {
                     currentQty += change;
@@ -365,13 +391,9 @@
             const product = products.find(p => p.id === currentProductId);
             const inCart = cart[currentProductId] || 0;
 
-            // Проверяем, не превысит ли общее количество на складе
             if (inCart + currentQty > product.quantity) {
-                if (tg) {
-                    tg.showAlert(`Нельзя добавить больше, чем есть на складе. Уже в корзине: ${inCart} шт.`);
-                } else {
-                    alert(`Нельзя добавить больше, чем есть на складе. Уже в корзине: ${inCart} шт.`);
-                }
+                if (tg) tg.showAlert(`Нельзя добавить больше, чем есть на складе. Уже в корзине: ${inCart} шт.`);
+                else alert(`Нельзя добавить больше, чем есть на складе. Уже в корзине: ${inCart} шт.`);
                 return;
             }
 
