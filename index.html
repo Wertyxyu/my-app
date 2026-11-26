@@ -202,18 +202,20 @@
         // ==============================================================
         const products = [
             { 
-                id: 1,                              // ID (просто номер, не повторяйте)
-                title: "Под-система XROS 3",        // Название
-                price: 2500,                        // Цена (только цифры)
-                inStock: false,                      // true = Есть, false = Нет
-                category: 'pods',                   // Категория (pods, liquids, coils)
-                image: "https://vapezone.com.ua/wp-content/uploads/2023/02/xros-3.jpg" // Ссылка на фото
+                id: 1,                              
+                title: "Под-система XROS 3",        
+                price: 2500,                        
+                inStock: true, // Включаем наличие                      
+                quantity: 3,   // <--- СКОЛЬКО ШТУК НА СКЛАДЕ
+                category: 'pods',                   
+                image: "https://vapezone.com.ua/wp-content/uploads/2023/02/xros-3.jpg" 
             },
             { 
                 id: 2, 
                 title: "Жидкость Blueberry Ice", 
                 price: 800, 
-                inStock: false, 
+                inStock: true, 
+                quantity: 10, // <--- 10 штук
                 category: 'liquids', 
                 image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Vape_liquid_bottle.jpg/800px-Vape_liquid_bottle.jpg" 
             },
@@ -221,7 +223,8 @@
                 id: 3, 
                 title: "Испаритель 0.6 Ohm", 
                 price: 350, 
-                inStock: false, 
+                inStock: false, // Нет в наличии
+                quantity: 0, 
                 category: 'coils', 
                 image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Coil_for_e-cigarette.jpg/640px-Coil_for_e-cigarette.jpg" 
             },
@@ -229,7 +232,8 @@
                 id: 4, 
                 title: "Одноразка Elf Bar", 
                 price: 1200, 
-                inStock: false, 
+                inStock: true, 
+                quantity: 5, 
                 category: 'pods', 
                 image: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Elf_bar_vape.jpg/640px-Elf_bar_vape.jpg" 
             },
@@ -237,7 +241,8 @@
                 id: 5, 
                 title: "Жидкость Mango Tango", 
                 price: 750, 
-                inStock: false, 
+                inStock: true, 
+                quantity: 7, 
                 category: 'liquids', 
                 image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Vape_liquid_bottle.jpg/800px-Vape_liquid_bottle.jpg" 
             },
@@ -245,7 +250,8 @@
                 id: 6, 
                 title: "Smoant Pasito 3", 
                 price: 3000, 
-                inStock: false, 
+                inStock: true, 
+                quantity: 2, 
                 category: 'pods', 
                 image: "1762973807100.jpg"
             }
@@ -297,7 +303,7 @@
                     <div class="product-title">${product.title}</div>
                     <div class="product-price">${product.price} ₽</div>
                     <div class="stock-status ${product.inStock ? 'stock-in' : 'stock-out'}">
-                        ${product.inStock ? 'В наличии' : 'Нет в наличии'}
+                        ${product.inStock ? `В наличии (${product.quantity} шт.)` : 'Нет в наличии'}
                     </div>
                     <button class="add-btn" onclick="openModal(${product.id})" ${!product.inStock ? 'disabled' : ''}>
                         ${product.inStock ? 'Купить' : 'Нет'}
@@ -319,20 +325,61 @@
         });
 
         let currentProductId = null; let currentQty = 1;
+        
         function openModal(id) {
-            currentProductId = id; currentQty = 1;
+            currentProductId = id; 
+            currentQty = 1;
             const product = products.find(p => p.id === id);
             document.getElementById('modal-product-title').innerText = product.title;
             document.getElementById('modal-qty').innerText = currentQty;
             document.getElementById('modal').classList.add('active');
         }
+        
         function closeModal() { document.getElementById('modal').classList.remove('active'); }
-        function changeQty(change) { if (currentQty + change >= 1) { currentQty += change; document.getElementById('modal-qty').innerText = currentQty; } }
+        
+        function changeQty(change) {
+            const product = products.find(p => p.id === currentProductId);
+            
+            // Если нажимаем плюс, проверяем, не превысили ли остаток
+            if (change > 0) {
+                if (currentQty + change <= product.quantity) {
+                    currentQty += change;
+                } else {
+                    if (tg) {
+                        tg.showAlert(`На складе осталось только ${product.quantity} шт.`);
+                    } else {
+                        alert(`На складе осталось только ${product.quantity} шт.`);
+                    }
+                }
+            } 
+            // Если нажимаем минус, не даем уйти в минус
+            else if (change < 0) {
+                if (currentQty + change >= 1) {
+                    currentQty += change;
+                }
+            }
+            document.getElementById('modal-qty').innerText = currentQty;
+        }
         
         function confirmAdd() {
+            const product = products.find(p => p.id === currentProductId);
+            const inCart = cart[currentProductId] || 0;
+
+            // Проверяем, не превысит ли общее количество на складе
+            if (inCart + currentQty > product.quantity) {
+                if (tg) {
+                    tg.showAlert(`Нельзя добавить больше, чем есть на складе. Уже в корзине: ${inCart} шт.`);
+                } else {
+                    alert(`Нельзя добавить больше, чем есть на складе. Уже в корзине: ${inCart} шт.`);
+                }
+                return;
+            }
+
             if (cart[currentProductId]) cart[currentProductId] += currentQty;
             else cart[currentProductId] = currentQty;
-            updateCartUI(); closeModal();
+            
+            updateCartUI(); 
+            closeModal();
             if (tg) tg.HapticFeedback.impactOccurred('medium');
         }
 
